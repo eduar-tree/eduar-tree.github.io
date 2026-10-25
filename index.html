@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eduar-tree</title>
+<meta name="description" content="把大文本看清，只用标准库。">
+<style>
+:root{
+  --bg:#0b0e14; --fg:#e6edf3; --muted:#8b949e; --line:#1f2630;
+  --card:#11161f; --accent:#7ee787; --accent2:#79c0ff;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#fbfbfa; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e6e4e0;
+         --card:#ffffff; --accent:#1a7f37; --accent2:#0969da; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC",
+              "Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:16px; line-height:1.78; letter-spacing:.01em;
+}
+main{max-width:720px; margin:0 auto; padding:88px 24px 120px}
+h1,h2,h3{line-height:1.3; letter-spacing:-.01em}
+a{color:var(--accent2); text-decoration:none; border-bottom:1px solid transparent}
+a:hover{border-bottom-color:var(--accent2)}
+
+.hero{padding-bottom:44px; border-bottom:1px solid var(--line)}
+.eyebrow{margin:0 0 14px; font-size:13px; color:var(--muted);
+         letter-spacing:.14em; text-transform:uppercase}
+.hero h1{margin:0; font-size:40px; font-weight:650}
+.tagline{margin:16px 0 0; font-size:18px; color:var(--muted); max-width:34em}
+
+section{padding:44px 0; border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+h2{margin:0 0 22px; font-size:13px; font-weight:600; letter-spacing:.14em;
+   text-transform:uppercase; color:var(--muted)}
+
+.about p{margin:0 0 18px; font-size:17px}
+ul.traits{list-style:none; margin:0; padding:0; display:grid; gap:10px}
+ul.traits li{padding-left:20px; position:relative; color:var(--fg)}
+ul.traits li::before{content:""; position:absolute; left:2px; top:.72em;
+  width:7px; height:1px; background:var(--accent)}
+
+.grid{display:grid; gap:14px}
+@media(min-width:640px){ .grid.two{grid-template-columns:1fr 1fr} }
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:20px}
+.card h3{margin:0 0 8px; font-size:17px; font-weight:600}
+.card p{margin:0; color:var(--muted); font-size:15px}
+.card .status{display:inline-block; margin-top:12px; font-size:12px;
+  color:var(--accent); letter-spacing:.06em}
+
+ul.repos{list-style:none; margin:0; padding:0}
+ul.repos li{padding:16px 0; border-bottom:1px dashed var(--line)}
+ul.repos li:last-child{border-bottom:0}
+ul.repos .name{font-weight:600}
+ul.repos .desc{color:var(--muted); font-size:15px; margin-top:2px}
+
+.tags{display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none}
+.tags li{border:1px solid var(--line); border-radius:999px;
+  padding:6px 14px; font-size:14px; color:var(--muted)}
+
+ol.timeline{list-style:none; margin:0; padding:0 0 0 20px;
+  border-left:1px solid var(--line)}
+ol.timeline li{position:relative; padding:0 0 26px 20px}
+ol.timeline li:last-child{padding-bottom:0}
+ol.timeline li::before{content:""; position:absolute; left:-25px; top:.62em;
+  width:9px; height:9px; border-radius:50%; background:var(--bg);
+  border:1px solid var(--accent)}
+ol.timeline .when{display:block; font-size:12px; color:var(--muted);
+  letter-spacing:.08em; margin-bottom:2px}
+
+footer{padding-top:44px; border-top:1px solid var(--line); margin-top:44px}
+footer .mission{margin:0 0 10px; font-size:17px}
+footer .note{margin:0; color:var(--muted); font-size:14px}
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">日志排查 · 纯标准库</p>
+  <h1>eduar-tree</h1>
+  <p class="tagline">把大文本看清，只用标准库。</p>
+</header>
+
+<section class="about" id="about">
+  <h2>关于</h2>
+  <p>我是 eduar-tree。写工具的偏好很明确：只用标准库，单文件，能管道组合，不联网。 大部分需求来自翻日志——几十 MB 的文本在终端里滚过去，什么都没看清。 所以我做的小工具都围绕&quot;看清楚&quot;这件事：统计规模、带上下文查找、按区间截取。 另一个在意的点是编码：日志经常不是 UTF-8，而工具在那一刻崩掉是最糟糕的结果， 所以我会让它退回替换字符、继续跑完，把乱码标出来就够了。</p>
+  <ul class="traits">
+    <li>单文件、标准库、无依赖——三个都要。</li>
+    <li>命令要能进管道，退出码要有意义。</li>
+    <li>统计中文时按字符算，不按词算。</li>
+    <li>工具在坏输入上要给出可读的错误，而不是堆栈。</li>
+  </ul>
+</section>
+
+<section id="research">
+  <h2>研究方向</h2>
+  <div class="grid two">
+    <article class="card">
+      <h3>终端里的文本处理</h3>
+      <p>在只有标准库的情况下，能把 grep/awk 的哪些常用场景覆盖到什么程度？</p>
+      <span class="status">在做工具</span>
+    </article>
+    <article class="card">
+      <h3>编码退化的处理策略</h3>
+      <p>什么时候应该替换、什么时候应该报错、什么时候该直接跳过？</p>
+      <span class="status">持续观察</span>
+    </article>
+    <article class="card">
+      <h3>超长文本的内存策略</h3>
+      <p>什么规模开始必须放弃整体读入，改用流式处理？</p>
+      <span class="status">长期思考</span>
+    </article>
+  </div>
+</section>
+
+<section id="work">
+  <h2>开源</h2>
+  <ul class="repos">
+    <li><div class="name">txtkit</div>
+      <div class="desc">统计、查找、截取三个子命令，Unix 风格输出，中文按字符而不是字节计数。</div>
+    </li>
+  </ul>
+</section>
+
+<section id="hobbies">
+  <h2>业余</h2>
+  <ul class="tags">
+    <li>整理值班时常用的排查命令</li>
+    <li>读事故复盘，摘出可以直接用的命令</li>
+    <li>收集各种奇怪编码的日志样本</li>
+  </ul>
+</section>
+
+<section id="timeline">
+  <h2>时间线</h2>
+  <ol class="timeline">
+    <li>
+      <span class="when">2026-10-21</span>
+      注册 GitHub 账号。
+    </li>
+    <li>
+      <span class="when">2026-10-25</span>
+      开源 txtkit，包含 count / find / slice 三个纯标准库子命令。
+    </li>
+  </ol>
+</section>
+
+<footer>
+  <p class="mission">让排查问题这件事，不需要先花十分钟配置环境。</p>
+  <p class="note">这个页面在生长。每一次真实的提交都会被记下来。</p>
+</footer>
+
+</main>
+</body>
+</html>
